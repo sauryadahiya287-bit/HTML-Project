@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#11131c" />
+    <meta name="description" content="Discover and book curated experiences with PulseEvents." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>PulseEvents — Discover experiences</title>
+    <style>
+      html, body, iframe { width: 100%; height: 100%; margin: 0; border: 0; }
+      body { overflow: hidden; background: #11131c; }
+      iframe { display: block; }
+      .fallback { position: fixed; inset: 0; display: grid; place-items: center; padding: 24px;
+        color: #e1e1ef; background: #11131c; font: 16px/1.5 system-ui, sans-serif; text-align: center; }
+      .fallback a { color: #c0c1ff; }
+    </style>
+  </head>
+  <body>
+    <iframe id="pulse-site" title="PulseEvents"></iframe>
+    <noscript><div class="fallback">PulseEvents needs JavaScript to connect its event pages. Open
+      <a href="/explore_events_ticketing/code.html">the event catalogue</a> directly.</div></noscript>
+    <script>
+      const frame = document.getElementById("pulse-site");
+      const views = {
+        explore: "/explore_events_ticketing/code.html",
+        calendar: "/explore_events_ticketing/code.html?calendar=1",
+        create: "/add_event_modal_sql_schema_form/code.html?create=1",
+        checkout: "/event_booking_ticket_checkout_drawer/code.html",
+        confirmation: "/booking_confirmation_qr_ticket/code.html",
+        tickets: "/my_tickets_pass_wallet/code.html"
+      };
+      frame.src = views[new URLSearchParams(location.search).get("view")] || views.explore;
+      frame.addEventListener("load", () => {
+        try {
+          const doc = frame.contentDocument;
+          if (!doc || doc.documentElement.dataset.pulseReady) return;
+          doc.documentElement.dataset.pulseReady = "loading";
+          const script = doc.createElement("script");
+          script.src = "/app.js";
+          script.onload = () => {
+            if (!doc.documentElement.dataset.pulseReady) {
+              doc.documentElement.dataset.pulseReady = "error";
+              doc.body.insertAdjacentHTML("afterbegin",
+                '<div class="fallback">The event app did not finish starting. Reload the page to try again.</div>');
+            }
+          };
+          script.onerror = () => {
+            doc.documentElement.dataset.pulseReady = "error";
+            doc.body.insertAdjacentHTML("afterbegin",
+              '<div class="fallback">The interactive controls could not load. <a href="/explore_events_ticketing/code.html">Reload the catalogue</a>.</div>');
+          };
+          doc.head.appendChild(script);
+        } catch (_) {
+          document.body.insertAdjacentHTML("beforeend",
+            '<div class="fallback">PulseEvents could not open this page. <a href="/explore_events_ticketing/code.html">Try the catalogue directly</a>.</div>');
+        }
+      });
+    </script>
+  </body>
+</html>
